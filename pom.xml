@@ -1,0 +1,200 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.github.accessrichard</groupId>
+	<artifactId>autoitx4java</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>Dcoumentation</name>
+	<description>Generate all documentation relative to architecture</description>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<asciidoctor.maven.plugin.version>1.5.3</asciidoctor.maven.plugin.version>
+		<asciidoctorj.pdf.version>1.5.0-alpha.11</asciidoctorj.pdf.version>
+		<asciidoctorj.version>1.5.4</asciidoctorj.version>
+		<jruby.version>1.7.21</jruby.version>
+		<java.version>1.8</java.version>
+		<junit.gen5.version>5.0.0-ALPHA</junit.gen5.version>
+		<!-- Due to a bug in surefire-junit5-5.0.0-ALPHA we use the latest snapshot 
+			instead -->
+		<junit.gen5.surefire-provider.version>5.0.0-SNAPSHOT</junit.gen5.surefire-provider.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>net.sf.jacob-project</groupId>
+			<artifactId>jacob</artifactId>
+			<version>1.18.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.6</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>us.ihmc.thirdparty.org.opencv</groupId>
+			<artifactId>opencv</artifactId>
+			<version>3.1.0</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>org.junit</groupId>
+			<artifactId>junit5-api</artifactId>
+			<version>${junit.gen5.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.3.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna-platform</artifactId>
+			<version>4.2.1</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<defaultGoal>process-resources</defaultGoal>
+		<plugins>
+			<plugin>
+				<groupId>org.asciidoctor</groupId>
+				<artifactId>asciidoctor-maven-plugin</artifactId>
+				<version>${asciidoctor.maven.plugin.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.asciidoctor</groupId>
+						<artifactId>asciidoctorj-pdf</artifactId>
+						<version>${asciidoctorj.pdf.version}</version>
+					</dependency>
+					<!-- Comment this section to use the default jruby artifact provided 
+						by the plugin -->
+					<dependency>
+						<groupId>org.jruby</groupId>
+						<artifactId>jruby-complete</artifactId>
+						<version>${jruby.version}</version>
+					</dependency>
+					<!-- Comment this section to use the default AsciidoctorJ artifact provided 
+						by the plugin -->
+					<dependency>
+						<groupId>org.asciidoctor</groupId>
+						<artifactId>asciidoctorj</artifactId>
+						<version>${asciidoctorj.version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<sourceDirectory>src/docs/asciidoc</sourceDirectory>
+					<!-- Attributes common to all output formats -->
+					<attributes>
+						<sourcedir>${project.build.sourceDirectory}</sourcedir>
+					</attributes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>generate-pdf-doc</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>process-asciidoc</goal>
+						</goals>
+						<configuration>
+							<backend>pdf</backend>
+							<!-- Since 1.5.0-alpha.9 PDF back-end can use 'rouge' as well as 'coderay' 
+								source highlighting -->
+							<sourceHighlighter>rouge</sourceHighlighter>
+							<attributes>
+								<icons>font</icons>
+								<pagenums />
+								<toc />
+								<idprefix />
+								<idseparator>-</idseparator>
+							</attributes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>asciidoc-to-html</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>process-asciidoc</goal>
+						</goals>
+						<configuration>
+							<backend>html5</backend>
+							<sourceHighlighter>coderay</sourceHighlighter>
+							<attributes>
+								<imagesdir>./images</imagesdir>
+								<toc>left</toc>
+								<icons>font</icons>
+								<sectanchors>true</sectanchors>
+								<!-- set the idprefix to blank -->
+								<idprefix />
+								<idseparator>-</idseparator>
+								<docinfo1>true</docinfo1>
+							</attributes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<forkMode>once</forkMode>
+					<workingDirectory>target</workingDirectory>
+					<argLine>-Djava.library.path=${project.build.directory}/dll</argLine>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.10</version>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>net.sf.jacob-project</groupId>
+									<artifactId>jacob</artifactId>
+									<version>1.18.0</version>
+									<classifier>x64</classifier>
+									<type>dll</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.directory}/dll</outputDirectory>
+									<destFileName>jacob-1.18-x64.dll</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${project.build.directory}/wars</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<repositories>
+		<repository>
+			<id>bitray</id>
+			<url>https://dl.bintray.com/ihmcrobotics/maven-vendor</url>
+		</repository>
+	</repositories>
+</project>

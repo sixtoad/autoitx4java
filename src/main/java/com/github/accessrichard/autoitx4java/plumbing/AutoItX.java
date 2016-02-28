@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package autoitx4java;
+package com.github.accessrichard.autoitx4java.plumbing;
 
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.SafeArray;
@@ -555,10 +555,20 @@ public class AutoItX {
      * Creates a tooltip anywhere on the screen.
      * @param text The text of the tooltip. (An empty string clears a displaying tooltip)
      */
-    public void toolTip(String text) {
-        autoItX.invoke("ToolTip", text);
+	public void toolTip(String text) {
+       autoItX.invoke("ToolTip", text);
     }
-
+	
+	//ToolTip ( "text" [, x [, y [, "title" [, icon = 0 [, options]]]]] )
+	public void toolTip(String text, int x, int y, String title, int icon) {
+        Variant vText = new Variant(text);
+        Variant vX = new Variant(x);
+        Variant vY = new Variant(y);
+        Variant vTitle = new Variant(text);
+        Variant vIcon = new Variant(icon);
+        Variant[] params = new Variant[]{vText, vX, vY, vTitle, vIcon};
+        autoItX.invoke("ToolTip", params);
+    }
     /**
      * Disable/enable the mouse and keyboard.
      * Requires admin rights in Vista and Windows 7.
@@ -1135,7 +1145,7 @@ public class AutoItX {
      * @param controlID The control to interact with.
      * @param button The button to click, "left", "right" or "middle". 
      *               Default is the left button.
-     * @param clicks The number of times to click the mouse. Default is center.
+     * @param clicks The number of times to click the mouse. Default is 1.
      * @param x The x position to click within the control. Default is center.
      * @param y The y position to click within the control. Default is center.
      * @return True if success, false otherwise.
